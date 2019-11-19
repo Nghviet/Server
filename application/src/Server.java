@@ -47,6 +47,8 @@ public class Server {
             storage[i] = new Score(name,score);
         }
 
+        Arrays.sort(storage);
+
         while(true)
         {
             socket = server.accept();
@@ -81,7 +83,7 @@ public class Server {
 
     private static String[] value() {
         String[] ret = new String[10];
-        for(int i=0;i<10;i++) ret[i] = storage[i].toString();
+        for(int i = 0;i<10;i++) ret[9-i] = storage[i].toString();
         return ret;
     }
 
