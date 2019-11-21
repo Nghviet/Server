@@ -1,13 +1,14 @@
 var WebSocketServer = require('websocket').server;
+var fs = require('fs');
 var http = require('http');
-
 var server = http.createServer(function(request, response) {});
-server.listen(3000, function() { 
-	console.log("Listening");
-});
-
 wsServer = new WebSocketServer({
   httpServer: server
+});
+
+
+server.listen(3000, function() { 
+	console.log("Listening");
 });
 
 wsServer.on('request', function(request) {
@@ -15,7 +16,12 @@ wsServer.on('request', function(request) {
 
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
-
+    	console.log(message);
+    	if(message.utf8Data === 'update') {
+    		fs.readFile('data','utf8',(err,data) =>{
+    			connection.sendUTF(data);
+    		})
+    	}
     }
   });
 
