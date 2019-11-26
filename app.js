@@ -11,16 +11,29 @@ server.listen(3000, function() {
 	console.log("Listening");
 });
 
+var next = false;
+
 wsServer.on('request', function(request) {
   var connection = request.accept(null, request.origin);
 
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
     	console.log(message);
-    	if(message.utf8Data === 'update') {
+    	if(next === true) {
+    		next = false;
+    		fs.writeFile('data', message.utf8Data,(err) =>{});
+    		console.log("write complete");
+    	}
+
+    	if(message.utf8Data === 'get') {
     		fs.readFile('data','utf8',(err,data) =>{
     			connection.sendUTF(data);
     		})
+    	}
+    	
+    	if(message.utf8Data === 'update') {
+    		next = true;
+    		console.log("new data");
     	}
     }
   });
