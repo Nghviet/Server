@@ -1,11 +1,11 @@
-var WebSocketServer = require('websocket').server;
+var WebSocket = require('ws');
 var fs = require('fs');
 var http = require('http');
-var server = http.createServer(function(request, response) {});
-wsServer = new WebSocketServer({
-  httpServer: server
-});
+var express = require('express');
+var app = express();
 
+var server = http.createServer(app);
+wsServer = new WebSocket.Server({server});
 
 server.listen(3000, function() { 
 	console.log("Listening");
@@ -13,32 +13,38 @@ server.listen(3000, function() {
 
 var next = false;
 
-wsServer.on('request', function(request) {
-  var connection = request.accept(null, request.origin);
+// Java client
+wsServer.on('connection', (ws) => {
+  	ws.on('message', function(message) {
+  		{
+	    	console.log(message);
+	    	if(next == true) {
+	    		next = false;
+	    		fs.writeFile('data', message,(err) =>{});
+	    		console.log("write complete");
+	    	}
 
-  connection.on('message', function(message) {
-    if (message.type === 'utf8') {
-    	console.log(message);
-    	if(next === true) {
-    		next = false;
-    		fs.writeFile('data', message.utf8Data,(err) =>{});
-    		console.log("write complete");
-    	}
+	    	if(message == 'get') {
+	    		console.log('sending response');
+	    		fs.readFile('data','utf8',(err,data) =>{
+	    			ws.send(data);
+	    		})
+	    	}
+	    	
+	    	if(message == 'update') {
+	    		next = true;
+	    		console.log("new data");
+	    	}
+	    }
+  	});
 
-    	if(message.utf8Data === 'get') {
-    		fs.readFile('data','utf8',(err,data) =>{
-    			connection.sendUTF(data);
-    		})
-    	}
-    	
-    	if(message.utf8Data === 'update') {
-    		next = true;
-    		console.log("new data");
-    	}
-    }
-  });
-
-  connection.on('close', function(connection) {
+  	ws.on('close', function(ws) {
     // close user connection
-  });
+  	});
+});
+
+// Webbase client
+var io = require('socket.io')(server);
+io.on('connection', (socket) =>{
+	console.log("Incomming web");
 });
